@@ -3,7 +3,7 @@ import sys
 
 import qtawesome as qta
 from PySide6.QtCore import QDir, QSize, Qt
-from PySide6.QtGui import QAction, QPixmap
+from PySide6.QtGui import QAction, QIcon, QPalette, QPixmap
 from PySide6.QtWidgets import (
     QApplication,
     QFileDialog,
@@ -26,6 +26,7 @@ from PySide6.QtWidgets import (
 
 from image_semantic_search import remove_index, search_image
 from image_viewer import InteractiveImageViewer
+from image_info_panel import ImageInfoPanel
 from ingestWorker import IngestWorker
 from theme import Theme
 
@@ -33,12 +34,14 @@ from theme import Theme
 class ImageBrowser(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("Semantic Image Search")
+        self.setWindowTitle(" Image Search")
         self.resize(1200, 800)
+        # 设置窗口图标
+        self.setWindowIcon(QIcon("app.ico"))
         self.current_image_path = ""
         self.current_folder_path = ""
-        # 初始化主题为亮色模式
-        self.current_theme = Theme.LIGHT
+        # 检测系统主题并初始化
+        self.current_theme = self.detect_system_theme()
         # 初始化进度条
         self.progress_bar = QProgressBar()
         self.progress_bar.setMaximumWidth(200)
@@ -47,6 +50,40 @@ class ImageBrowser(QMainWindow):
         self.setup_ui()
         self.setup_menu()
         self.apply_theme()
+
+    def detect_system_theme(self):
+        """检测系统主题，返回Theme.LIGHT或Theme.DARK"""
+        try:
+            # 尝试使用Qt 6.5+的colorScheme()方法
+            app = QApplication.instance()
+            if hasattr(app.styleHints(), 'colorScheme'):
+                from PySide6.QtCore import Qt
+                color_scheme = app.styleHints().colorScheme()
+                if color_scheme == Qt.ColorScheme.Dark:
+                    return Theme.DARK
+                else:
+                    return Theme.LIGHT
+        except:
+            pass
+
+        # 回退方法：检查调色板
+        try:
+            palette = QApplication.palette()
+            # 检查窗口背景色的亮度
+            window_color = palette.color(QPalette.ColorRole.Window)
+            # 计算亮度 (使用相对亮度公式)
+            brightness = (0.299 * window_color.red() +
+                         0.587 * window_color.green() +
+                         0.114 * window_color.blue()) / 255
+
+            # 如果亮度低于0.5，认为是暗色主题
+            if brightness < 0.5:
+                return Theme.DARK
+            else:
+                return Theme.LIGHT
+        except:
+            # 如果检测失败，默认使用亮色主题
+            return Theme.LIGHT
 
     def setup_ui(self):
         # 使用 QSplitter 实现左右面板的可拖拽分割
@@ -107,9 +144,13 @@ class ImageBrowser(QMainWindow):
 
         # 实例化一个纯图标按钮
         self.theme_button = QPushButton()
-        # 初始化图标为月亮（假设初始状态需要切换到暗黑模式）
-        # qta.icon 支持动态变色以适应背景
-        self.theme_button.setIcon(qta.icon("fa5s.moon", color="#555555"))
+        # 根据当前主题设置初始图标
+        if self.current_theme == Theme.DARK:
+            # 暗色主题时显示太阳图标（可以切换到亮色）
+            self.theme_button.setIcon(qta.icon("fa5s.sun", color="#e0e0e0"))
+        else:
+            # 亮色主题时显示月亮图标（可以切换到暗色）
+            self.theme_button.setIcon(qta.icon("fa5s.moon", color="#555555"))
         self.theme_button.setIconSize(QSize(20, 20))
         # 设置为等宽高的正方形，符合极简审美
         self.theme_button.setFixedSize(35, 35)
@@ -132,8 +173,13 @@ class ImageBrowser(QMainWindow):
         # 图片显示组件
         self.image_viewer = InteractiveImageViewer()
 
+        # 图片信息面板
+        self.image_info_panel = ImageInfoPanel()
+        self.image_info_panel.setMaximumHeight(250)
+
         right_layout.addLayout(search_layout)
-        right_layout.addWidget(self.image_viewer)
+        right_layout.addWidget(self.image_viewer, 1)
+        right_layout.addWidget(self.image_info_panel)
 
         # 组合左右面板 (用 self.left_tabs 替换原来的 self.tree_view)
         self.splitter.addWidget(self.left_tabs)
@@ -162,6 +208,7 @@ class ImageBrowser(QMainWindow):
 
         # 严谨的交互逻辑：打开新文件夹时清空旧画板
         self.image_viewer.clear_view()
+        self.image_info_panel.clear_info()
 
     def on_tree_clicked(self, index):
         """处理左侧目录树的点击事件"""
@@ -189,6 +236,9 @@ class ImageBrowser(QMainWindow):
         success = self.image_viewer.load_image(self.current_image_path)
         if not success:
             self.statusBar().showMessage("无法解析该图像文件")
+        else:
+            # 更新图片信息面板
+            self.image_info_panel.update_info(self.current_image_path)
         return
 
     def on_search(self):
@@ -298,6 +348,10 @@ class ImageBrowser(QMainWindow):
         self.setStyleSheet(Theme.get_main_window_stylesheet(self.current_theme))
         # 应用图片查看器样式表
         self.image_viewer.setStyleSheet(
+            Theme.get_image_viewer_stylesheet(self.current_theme)
+        )
+        # 应用信息面板样式表
+        self.image_info_panel.setStyleSheet(
             Theme.get_image_viewer_stylesheet(self.current_theme)
         )
 

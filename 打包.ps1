@@ -1,1 +1,1 @@
-uv run nuitka --standalone --onefile --windows-disable-console  --enable-plugin=pyside6 --assume-yes-for-downloads .\Main_window.py
+uv run nuitka --standalone --onefile --windows-disable-console --windows-icon-from-ico=app.ico --enable-plugin=pyside6 --assume-yes-for-downloads .\Main_window.py

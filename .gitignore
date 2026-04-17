@@ -58,3 +58,7 @@ image/PixPinAutoSave/
 *.spec
 dist/
 build/
+
+
+上传.ps1
+打包.ps1
