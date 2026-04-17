@@ -1,0 +1,60 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+*.pyd
+*.so
+*.dylib
+build/
+dist/
+wheels/
+*.egg-info
+*.egg
+
+# Virtual environments
+.venv
+venv/
+env/
+ENV/
+
+# Nuitka build artifacts
+*.build/
+*.dist/
+*.onefile-build/
+nuitka-crash-report.xml
+
+# IDE and Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+*.sublime-project
+*.sublime-workspace
+
+# OS-specific files
+.AppleDouble
+.LSOverride
+*.log
+
+# Local data (should be rebuilt)
+image_vector_db/
+vector_db/
+*.lance/
+
+# Local image folders
+手机相册/
+image/PixPinAutoSave/
+
+# Compiled files and cache
+*.pyc
+.pytest_cache/
+.coverage
+.mypy_cache/
+.ruff_cache/
+
+# Project-specific
+*.spec
+dist/
+build/

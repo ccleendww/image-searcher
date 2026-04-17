@@ -1,0 +1,18 @@
+[project]
+name = "localsemanticsearch"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "lancedb>=0.30.2",
+    "modelscope>=1.35.3",
+    "nuitka>=4.0.7",
+    "pandas>=3.0.2",
+    "pdfplumber>=0.11.9",
+    "pymobiledevice3>=9.8.1",
+    "pyside6>=6.11.0",
+    "qtawesome>=1.4.1",
+    "rapidocr-onnxruntime>=1.4.4",
+    "sentence-transformers>=5.3.0",
+]
